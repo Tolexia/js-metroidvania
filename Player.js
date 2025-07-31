@@ -8,6 +8,12 @@ class Player extends Entity {
         super(config, x, y, config.TILE_SIZE * 0.8, config.TILE_SIZE * 0.95, '#00FFFF', levelManager);
         this.keys = {};
         this.setupControls();
+        
+        // Variables pour le système de dash
+        this.isDashing = false;
+        this.dashDirection = 0; // -1 pour gauche, 1 pour droite
+        this.dashTimer = 0;
+        this.dashCooldown = 0;
     }
 
     setupControls() {
@@ -16,17 +22,54 @@ class Player extends Entity {
     }
 
     handleInput() {
-        if (this.keys['ArrowLeft']) {
-            this.velocityX = -this.config.PLAYER_SPEED;
-        } else if (this.keys['ArrowRight']) {
-            this.velocityX = this.config.PLAYER_SPEED;
-        } else {
-            this.velocityX *= this.config.FRICTION;
+        // Gestion du dash
+        if (this.dashCooldown > 0) {
+            this.dashCooldown--;
         }
+        
+        if (this.isDashing) {
+            console.log("Dashing");
+            this.dashTimer--;
+
+            this.velocityX = this.dashDirection * this.config.DASH_SPEED;
+            this.velocityY = 0;
+            if (this.dashTimer <= 0) {
+                this.isDashing = false;
+                this.velocityX = 0;
+            }
+        } else {
+            // Dash avec Shift + flèche gauche/droite
+            if (this.dashCooldown <= 0 && (this.keys['ShiftLeft'] || this.keys['ShiftRight'])) {
+                if (this.keys['ArrowLeft']) {
+                    this.startDash(-1);
+                } else if (this.keys['ArrowRight']) {
+                    this.startDash(1);
+                }
+            }
+            
+            // Mouvement normal
+            if (this.keys['ArrowLeft']) {
+                this.velocityX = -this.config.PLAYER_SPEED;
+            } else if (this.keys['ArrowRight']) {
+                this.velocityX = this.config.PLAYER_SPEED;
+            } else {
+                this.velocityX *= this.config.FRICTION;
+            }
+        }
+        
         if (this.keys['Space'] && this.isOnGround) {
             this.velocityY = this.config.PLAYER_JUMP_FORCE;
             this.isOnGround = false;
         }
+    }
+    
+    startDash(direction) {
+        this.isDashing = true;
+        this.dashDirection = direction;
+        this.dashTimer = this.config.DASH_DURATION;
+        this.dashCooldown = this.config.DASH_COOLDOWN;
+        this.velocityX = direction * this.config.DASH_SPEED;
+        this.velocityY = 0;
     }
     
     checkDoors(game) {

@@ -18,6 +18,11 @@ class Context {
         this.PLAYER_SPEED = 4;
         this.PLAYER_JUMP_FORCE = -14;
 
+        // Système de dash
+        this.DASH_SPEED = 12;
+        this.DASH_DURATION = 10; // frames
+        this.DASH_COOLDOWN = 30; // frames
+
         // Vitesse du zombie
         this.ZOMBIE_SPEED = 0.5;
 
