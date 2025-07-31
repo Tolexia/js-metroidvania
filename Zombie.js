@@ -11,13 +11,14 @@ class Zombie extends Entity {
 
     patrol() {
         this.velocityX = this.config.ZOMBIE_SPEED * this.direction;
-        if (this.velocityX === 0) {
-            this.direction *= -1;
-        }
+        
         const TILE_SIZE = this.config.TILE_SIZE;
+
         const frontX = this.direction > 0 ? this.x + this.width : this.x;
         const tileBelowFront = this.levelManager.getTile(frontX, this.y + this.height + 1);
-        if (this.isOnGround && tileBelowFront === 0) {
+        const tileFront = this.levelManager.getTile(this.x + this.direction, this.y);
+        
+        if (this.isOnGround && (tileBelowFront === 0 || tileFront === 1)) {
             this.direction *= -1;
         }
     }
@@ -25,6 +26,9 @@ class Zombie extends Entity {
     update(game, dtFactor) {
         this.patrol();
         super.update(game, dtFactor);
+        if (this.velocityX === 0) {
+            this.direction *= -1;
+        }
     }
 }
 

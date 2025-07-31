@@ -28,14 +28,18 @@ class Entity {
         
         // On calcule la prochaine position en fonction du dtFactor
         let nextX = this.x + this.velocityX * dtFactor;
+        
+        // Collision horizontale
         if (this.velocityX < 0) {
             if (this.levelManager.getTile(nextX, this.y) !== 0 || this.levelManager.getTile(nextX, this.y + this.height - 1) !== 0) {
-                this.x = Math.floor(nextX / TILE_SIZE) * TILE_SIZE + TILE_SIZE;
+                // Aligner sur la grille de tuiles
+                this.x = Math.ceil(nextX / TILE_SIZE) * TILE_SIZE;
                 this.velocityX = 0;
             }
         }
         if (this.velocityX > 0) {
             if (this.levelManager.getTile(nextX + this.width, this.y) !== 0 || this.levelManager.getTile(nextX + this.width, this.y + this.height - 1) !== 0) {
+                // Aligner sur la grille de tuiles
                 this.x = Math.floor((nextX + this.width) / TILE_SIZE) * TILE_SIZE - this.width;
                 this.velocityX = 0;
             }
@@ -43,14 +47,18 @@ class Entity {
         
         let nextY = this.y + this.velocityY * dtFactor;
         this.isOnGround = false;
+        
+        // Collision verticale
         if (this.velocityY < 0) {
             if (this.levelManager.getTile(this.x, nextY) !== 0 || this.levelManager.getTile(this.x + this.width - 1, nextY) !== 0) {
-                this.y = Math.floor(nextY / TILE_SIZE) * TILE_SIZE + TILE_SIZE;
+                // Aligner sur la grille de tuiles
+                this.y = Math.ceil(nextY / TILE_SIZE) * TILE_SIZE;
                 this.velocityY = 0;
             }
         }
         if (this.velocityY > 0) {
             if (this.levelManager.getTile(this.x, nextY + this.height) !== 0 || this.levelManager.getTile(this.x + this.width - 1, nextY + this.height) !== 0) {
+                // Aligner sur la grille de tuiles
                 this.y = Math.floor((nextY + this.height) / TILE_SIZE) * TILE_SIZE - this.height;
                 this.velocityY = 0;
                 this.isOnGround = true;

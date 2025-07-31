@@ -20,10 +20,36 @@ class Game {
         this.player = new Player(this.config, 100, 100, this.levelManager);
         this.entities = [];
         this.lastTime = 0;
+        this.isPaused = false;
 
         this.initialPlayerX = 100;
         this.initialPlayerY = 400;
         this.initialRoom = 'start_room';
+        
+        // Gestionnaire pour le redimensionnement de la fenêtre
+        this.setupWindowHandlers();
+    }
+
+    setupWindowHandlers() {
+        // Gestionnaire pour la visibilité de la page
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                this.isPaused = true;
+                this.lastTime = 0; // Reset du temps pour éviter les gros deltaTime
+            } else {
+                this.isPaused = false;
+            }
+        });
+
+        // Gestionnaire pour le focus de la fenêtre
+        window.addEventListener('focus', () => {
+            this.isPaused = false;
+            this.lastTime = 0; // Reset du temps
+        });
+
+        window.addEventListener('blur', () => {
+            this.isPaused = true;
+        });
     }
 
     resetGame() {
@@ -58,12 +84,18 @@ class Game {
     }
 
     gameLoop(timestamp) {
+        // Si le jeu est en pause, on continue la boucle sans mettre à jour
+        if (this.isPaused) {
+            requestAnimationFrame(this.gameLoop.bind(this));
+            return;
+        }
+
         // NEW: Calcul du deltaTime et du facteur de normalisation
-        const deltaTime = timestamp - this.lastTime;
+        const deltaTime = this.lastTime === 0 ? 0 : timestamp - this.lastTime;
         this.lastTime = timestamp;
         
         // Limiter le deltaTime pour éviter les sauts de position
-        const clampedDeltaTime = Math.min(deltaTime, 100); // Max 100ms
+        const clampedDeltaTime = Math.min(deltaTime, 50); // Réduit de 100ms à 50ms
         
         // On normalise par rapport à une frame de 60 FPS (environ 16.67ms)
         // Si le jeu tourne à 30 FPS, dtFactor sera ~2. S'il tourne à 120 FPS, ~0.5.
