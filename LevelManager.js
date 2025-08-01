@@ -22,7 +22,10 @@ class LevelManager {
         if (this.currentRoomData.entities) {
             this.currentRoomData.entities.forEach(entityInfo => {
                 if (entityInfo.type === 'zombie') {
-                    entities.push(new Zombie(this.config, entityInfo.x, entityInfo.y, this));
+                    // Convertir les coordonnées de grille en coordonnées pixels
+                    const pixelX = entityInfo.x * this.config.TILE_SIZE;
+                    const pixelY = entityInfo.y * this.config.TILE_SIZE;
+                    entities.push(new Zombie(this.config, pixelX, pixelY, this));
                 }
             });
         }

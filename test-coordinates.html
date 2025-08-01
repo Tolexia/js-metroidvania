@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Coordonnées</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .test-result {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #4299e1;
+        }
+        .success { border-left-color: #38a169; }
+        .error { border-left-color: #e53e3e; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test des Coordonnées</h1>
+    <div id="results"></div>
+
+    <script type="module">
+        import levels from './levels.js';
+
+        function testCoordinates() {
+            const results = document.getElementById('results');
+            let html = '';
+
+            // Test 1: Vérifier que les zombies ont des coordonnées de grille
+            html += '<div class="test-result">';
+            html += '<h3>Test 1: Coordonnées zombies</h3>';
+            
+            let zombieTestPassed = true;
+            Object.entries(levels).forEach(([roomName, room]) => {
+                if (room.entities) {
+                    room.entities.forEach(entity => {
+                        if (entity.type === 'zombie') {
+                            html += `<p>🧟 Zombie dans ${roomName}: x=${entity.x}, y=${entity.y}</p>`;
+                            
+                            // Vérifier que les coordonnées sont dans la grille 25x18
+                            if (entity.x < 0 || entity.x >= 25 || entity.y < 0 || entity.y >= 18) {
+                                html += `<p class="error">❌ Coordonnées hors grille !</p>`;
+                                zombieTestPassed = false;
+                            } else {
+                                html += `<p class="success">✅ Coordonnées valides</p>`;
+                            }
+                        }
+                    });
+                }
+            });
+            html += '</div>';
+
+            // Test 2: Vérifier que les portes ont des coordonnées de grille
+            html += '<div class="test-result">';
+            html += '<h3>Test 2: Coordonnées portes</h3>';
+            
+            let doorTestPassed = true;
+            Object.entries(levels).forEach(([roomName, room]) => {
+                if (room.doors) {
+                    room.doors.forEach(door => {
+                        html += `<p>🚪 Porte dans ${roomName}: x=${door.x}, y=${door.y}</p>`;
+                        
+                        if (door.x < 0 || door.x >= 25 || door.y < 0 || door.y >= 18) {
+                            html += `<p class="error">❌ Coordonnées hors grille !</p>`;
+                            doorTestPassed = false;
+                        } else {
+                            html += `<p class="success">✅ Coordonnées valides</p>`;
+                        }
+                    });
+                }
+            });
+            html += '</div>';
+
+            // Test 3: Vérifier la cohérence du format
+            html += '<div class="test-result">';
+            html += '<h3>Test 3: Cohérence du format</h3>';
+            
+            let formatTestPassed = true;
+            Object.entries(levels).forEach(([roomName, room]) => {
+                if (room.entities) {
+                    room.entities.forEach(entity => {
+                        if (entity.type === 'zombie') {
+                            // Vérifier que ce sont des nombres entiers
+                            if (!Number.isInteger(entity.x) || !Number.isInteger(entity.y)) {
+                                html += `<p class="error">❌ Coordonnées zombies non entières dans ${roomName}</p>`;
+                                formatTestPassed = false;
+                            }
+                        }
+                    });
+                }
+                if (room.doors) {
+                    room.doors.forEach(door => {
+                        if (!Number.isInteger(door.x) || !Number.isInteger(door.y)) {
+                            html += `<p class="error">❌ Coordonnées portes non entières dans ${roomName}</p>`;
+                            formatTestPassed = false;
+                        }
+                    });
+                }
+            });
+            
+            if (formatTestPassed) {
+                html += '<p class="success">✅ Format cohérent</p>';
+            }
+            html += '</div>';
+
+            // Résumé
+            html += '<div class="test-result">';
+            html += '<h3>📊 Résumé</h3>';
+            if (zombieTestPassed && doorTestPassed && formatTestPassed) {
+                html += '<p class="success">🎉 Tous les tests sont passés ! Les coordonnées sont harmonisées.</p>';
+            } else {
+                html += '<p class="error">❌ Certains tests ont échoué.</p>';
+            }
+            html += '</div>';
+
+            results.innerHTML = html;
+        }
+
+        // Exécuter les tests
+        testCoordinates();
+    </script>
+</body>
+</html> 

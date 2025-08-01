@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Éditeur de Niveaux - Metroidvania</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            gap: 20px;
+            height: calc(100vh - 200px);
+        }
+
+        .toolbar {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .toolbar h3 {
+            margin-bottom: 15px;
+            color: #4a5568;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+
+        .tool-group {
+            margin-bottom: 25px;
+        }
+
+        .tool-button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 8px;
+            background: #f7fafc;
+            color: #4a5568;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .tool-button:hover {
+            background: #edf2f7;
+            transform: translateY(-2px);
+        }
+
+        .tool-button.active {
+            background: #4299e1;
+            color: white;
+        }
+
+        .tool-button.wall {
+            border-left: 4px solid #2d3748;
+        }
+
+        .tool-button.zombie {
+            border-left: 4px solid #e53e3e;
+        }
+
+        .tool-button.door {
+            border-left: 4px solid #38a169;
+        }
+
+        .tool-button.erase {
+            border-left: 4px solid #d69e2e;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .modal-header h3 {
+            color: #2d3748;
+            margin: 0;
+        }
+
+        .close {
+            color: #a0aec0;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #2d3748;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4299e1;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+
+        .btn-modal {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-modal.primary {
+            background: #4299e1;
+            color: white;
+        }
+
+        .btn-modal.primary:hover {
+            background: #3182ce;
+        }
+
+        .btn-modal.secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-modal.secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .canvas-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .canvas-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .room-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .room-selector select {
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .canvas-wrapper {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f7fafc;
+            border-radius: 10px;
+            overflow: auto;
+        }
+
+        #levelCanvas {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .info-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .info-panel h3 {
+            margin-bottom: 15px;
+            color: #4a5568;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+
+        .info-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f7fafc;
+            border-radius: 8px;
+            border-left: 4px solid #4299e1;
+        }
+
+        .info-item h4 {
+            color: #2d3748;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .info-item p {
+            color: #4a5568;
+            font-size: 13px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #4299e1;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3182ce;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #38a169;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #2f855a;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #e53e3e;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c53030;
+            transform: translateY(-2px);
+        }
+
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #4a5568;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+
+        .legend-color.wall { background: #2d3748; }
+        .legend-color.empty { background: #e2e8f0; }
+        .legend-color.zombie { background: #e53e3e; }
+        .legend-color.door { background: #38a169; }
+
+        .status-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 250px 1fr 250px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Éditeur de Niveaux</h1>
+            <p>Créez et modifiez vos niveaux Metroidvania</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Barre d'outils -->
+            <div class="toolbar">
+                <div class="tool-group">
+                    <h3>🛠️ Outils d'édition</h3>
+                    <button class="tool-button wall active" data-tool="wall">
+                        🧱 Mur
+                    </button>
+                    <button class="tool-button zombie" data-tool="zombie">
+                        🧟 Zombie
+                    </button>
+                    <button class="tool-button door" data-tool="door">
+                        🚪 Porte
+                    </button>
+                    <button class="tool-button erase" data-tool="erase">
+                        🗑️ Effacer
+                    </button>
+                </div>
+
+                <div class="tool-group">
+                    <h3>📏 Grille</h3>
+                    <button class="tool-button" id="toggleGrid">
+                        📐 Afficher/Masquer la grille
+                    </button>
+                    <button class="tool-button" id="zoomIn">
+                        🔍 Zoom +
+                    </button>
+                    <button class="tool-button" id="zoomOut">
+                        🔍 Zoom -
+                    </button>
+                </div>
+
+                <div class="tool-group">
+                    <h3>💾 Actions</h3>
+                    <button class="btn btn-success" id="saveLevel">
+                        💾 Sauvegarder
+                    </button>
+                    <button class="btn btn-primary" id="addRoom">
+                        ➕ Nouvelle salle
+                    </button>
+                    <button class="btn btn-danger" id="deleteRoom">
+                        🗑️ Supprimer salle
+                    </button>
+                </div>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color wall"></div>
+                        <span>Mur</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color empty"></div>
+                        <span>Vide</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color zombie"></div>
+                        <span>Zombie</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color door"></div>
+                        <span>Porte</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zone de dessin -->
+            <div class="canvas-container">
+                <div class="canvas-header">
+                    <div class="room-selector">
+                        <label for="roomSelect">Salle:</label>
+                        <select id="roomSelect">
+                        </select>
+                    </div>
+                    <div>
+                        <span id="mouseCoords">X: 0, Y: 0</span>
+                    </div>
+                </div>
+                <div class="canvas-wrapper">
+                    <canvas id="levelCanvas" width="800" height="600"></canvas>
+                </div>
+            </div>
+
+            <!-- Panneau d'information -->
+            <div class="info-panel">
+                <h3>📊 Informations</h3>
+                
+                <div class="info-item">
+                    <h4>🎯 Outil actuel</h4>
+                    <p id="currentTool">Mur</p>
+                </div>
+
+                <div class="info-item">
+                    <h4>📐 Dimensions</h4>
+                    <p id="gridSize">25 x 18</p>
+                </div>
+
+                <div class="info-item">
+                    <h4>🧟 Zombies</h4>
+                    <p id="zombieCount">0</p>
+                </div>
+
+                <div class="info-item">
+                    <h4>🚪 Portes</h4>
+                    <p id="doorCount">0</p>
+                </div>
+
+                <div class="info-item">
+                    <h4>🧱 Murs</h4>
+                    <p id="wallCount">0</p>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="exportLevel">
+                        📤 Exporter
+                    </button>
+                    <button class="btn btn-danger" id="clearLevel">
+                        🗑️ Vider
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-bar" id="statusBar">
+        Prêt à éditer
+    </div>
+
+    <!-- Modal pour la configuration des portes -->
+    <div id="doorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🚪 Configuration de la porte</h3>
+                <span class="close" id="closeModal">&times;</span>
+            </div>
+            <form id="doorForm">
+                <div class="form-group">
+                    <label for="targetRoom">Salle de destination:</label>
+                    <select id="targetRoom" required>
+                        <option value="">Sélectionnez une salle</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="targetX">Coordonnée X de destination:</label>
+                    <input type="number" id="targetX" min="0" max="24" required placeholder="0-24">
+                </div>
+                <div class="form-group">
+                    <label for="targetY">Coordonnée Y de destination:</label>
+                    <input type="number" id="targetY" min="0" max="17" required placeholder="0-17">
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-modal secondary" id="cancelDoor">Annuler</button>
+                    <button type="submit" class="btn-modal primary" id="confirmDoor">Confirmer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import levels from './levels.js';
+
+        class LevelEditor {
+            constructor() {
+                this.canvas = document.getElementById('levelCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.currentTool = 'wall';
+                this.currentRoom = 'start_room';
+                this.levels = JSON.parse(JSON.stringify(levels)); // Copie profonde
+                this.tileSize = 20;
+                this.showGrid = true;
+                this.isMouseDown = false;
+                this.lastMousePos = { x: 0, y: 0 };
+
+                this.initializeEventListeners();
+                this.initializeRoomSelector();
+                this.render();
+                this.updateInfo();
+            }
+
+
+
+            initializeEventListeners() {
+                // Outils
+                document.querySelectorAll('.tool-button[data-tool]').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        this.setTool(e.target.dataset.tool);
+                    });
+                });
+
+                // Sélecteur de salle
+                document.getElementById('roomSelect').addEventListener('change', (e) => {
+                    this.currentRoom = e.target.value;
+                    this.render();
+                    this.updateInfo();
+                });
+
+                // Canvas events
+                this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
+                this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+                this.canvas.addEventListener('mouseup', () => this.handleMouseUp());
+                this.canvas.addEventListener('mouseleave', () => this.handleMouseUp());
+
+                // Boutons d'action
+                document.getElementById('saveLevel').addEventListener('click', () => this.saveLevel());
+                document.getElementById('addRoom').addEventListener('click', () => this.addRoom());
+                document.getElementById('deleteRoom').addEventListener('click', () => this.deleteRoom());
+                document.getElementById('exportLevel').addEventListener('click', () => this.exportLevel());
+                document.getElementById('clearLevel').addEventListener('click', () => this.clearLevel());
+                document.getElementById('toggleGrid').addEventListener('click', () => this.toggleGrid());
+                document.getElementById('zoomIn').addEventListener('click', () => this.zoomIn());
+                document.getElementById('zoomOut').addEventListener('click', () => this.zoomOut());
+
+                // Modal events
+                document.getElementById('closeModal').addEventListener('click', () => this.closeDoorModal());
+                document.getElementById('cancelDoor').addEventListener('click', () => this.closeDoorModal());
+                document.getElementById('doorForm').addEventListener('submit', (e) => this.handleDoorFormSubmit(e));
+                
+                // Fermer la modale en cliquant à l'extérieur
+                document.getElementById('doorModal').addEventListener('click', (e) => {
+                    if (e.target.id === 'doorModal') {
+                        this.closeDoorModal();
+                    }
+                });
+            }
+
+            setTool(tool) {
+                this.currentTool = tool;
+                document.querySelectorAll('.tool-button[data-tool]').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelector(`[data-tool="${tool}"]`).classList.add('active');
+                document.getElementById('currentTool').textContent = this.getToolName(tool);
+                this.updateStatus(`Outil sélectionné: ${this.getToolName(tool)}`);
+            }
+
+            getToolName(tool) {
+                const names = {
+                    'wall': 'Mur',
+                    'zombie': 'Zombie',
+                    'door': 'Porte',
+                    'erase': 'Effacer'
+                };
+                return names[tool] || tool;
+            }
+
+            handleMouseDown(e) {
+                this.isMouseDown = true;
+                this.handleMouseAction(e);
+            }
+
+            handleMouseMove(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = Math.floor((e.clientX - rect.left) / this.tileSize);
+                const y = Math.floor((e.clientY - rect.top) / this.tileSize);
+                
+                document.getElementById('mouseCoords').textContent = `X: ${x}, Y: ${y}`;
+
+                if (this.isMouseDown) {
+                    this.handleMouseAction(e);
+                }
+            }
+
+            handleMouseUp() {
+                this.isMouseDown = false;
+            }
+
+            handleMouseAction(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = Math.floor((e.clientX - rect.left) / this.tileSize);
+                const y = Math.floor((e.clientY - rect.top) / this.tileSize);
+
+                if (x < 0 || x >= 25 || y < 0 || y >= 18) return;
+
+                const room = this.levels[this.currentRoom];
+
+                switch (this.currentTool) {
+                    case 'wall':
+                        room.layout[y][x] = room.layout[y][x] === 1 ? 0 : 1;
+                        break;
+                    case 'zombie':
+                        this.toggleZombie(x, y);
+                        break;
+                    case 'door':
+                        this.toggleDoor(x, y);
+                        break;
+                    case 'erase':
+                        room.layout[y][x] = 0;
+                        this.removeEntityAt(x, y);
+                        break;
+                }
+
+                this.render();
+                this.updateInfo();
+            }
+
+            toggleZombie(x, y) {
+                const room = this.levels[this.currentRoom];
+                const existingZombie = room.entities.find(e => 
+                    e.type === 'zombie' && 
+                    e.x === x && 
+                    e.y === y
+                );
+
+                if (existingZombie) {
+                    room.entities = room.entities.filter(e => e !== existingZombie);
+                } else {
+                    room.entities.push({
+                        type: 'zombie',
+                        x: x,
+                        y: y
+                    });
+                }
+            }
+
+            toggleDoor(x, y) {
+                const room = this.levels[this.currentRoom];
+                const existingDoor = room.doors.find(d => d.x === x && d.y === y);
+
+                if (existingDoor) {
+                    room.doors = room.doors.filter(d => d !== existingDoor);
+                } else {
+                    // Ouvrir la modale pour configurer la porte
+                    this.openDoorModal(x, y);
+                }
+            }
+
+            openDoorModal(x, y) {
+                this.pendingDoorPosition = { x, y };
+                document.getElementById('doorModal').style.display = 'block';
+                this.updateDoorModalOptions();
+                document.getElementById('targetRoom').value = '';
+                document.getElementById('targetX').value = '';
+                document.getElementById('targetY').value = '';
+            }
+
+            updateDoorModalOptions() {
+                const targetRoomSelect = document.getElementById('targetRoom');
+                
+                // Vider les options existantes sauf la première
+                while (targetRoomSelect.children.length > 1) {
+                    targetRoomSelect.removeChild(targetRoomSelect.lastChild);
+                }
+                
+                // Ajouter les options dynamiquement
+                Object.keys(this.levels).forEach(roomName => {
+                    const option = document.createElement('option');
+                    option.value = roomName;
+                    option.textContent = this.getRoomDisplayName(roomName);
+                    targetRoomSelect.appendChild(option);
+                });
+            }
+
+            getRoomDisplayName(roomName) {
+                const displayNames = {
+                    'start_room': 'Salle de départ',
+                    'right_room': 'Salle droite',
+                    'left_room': 'Salle gauche'
+                };
+                return displayNames[roomName] || roomName;
+            }
+
+            initializeRoomSelector() {
+                const select = document.getElementById('roomSelect');
+                
+                // Vider le sélecteur
+                select.innerHTML = '';
+                
+                // Ajouter les options dynamiquement
+                Object.keys(this.levels).forEach(roomName => {
+                    const option = document.createElement('option');
+                    option.value = roomName;
+                    option.textContent = this.getRoomDisplayName(roomName);
+                    select.appendChild(option);
+                });
+                
+                // Sélectionner la première salle
+                if (Object.keys(this.levels).length > 0) {
+                    this.currentRoom = Object.keys(this.levels)[0];
+                    select.value = this.currentRoom;
+                }
+            }
+
+            closeDoorModal() {
+                document.getElementById('doorModal').style.display = 'none';
+                this.pendingDoorPosition = null;
+            }
+
+            handleDoorFormSubmit(e) {
+                e.preventDefault();
+                
+                const targetRoom = document.getElementById('targetRoom').value;
+                const targetX = parseInt(document.getElementById('targetX').value);
+                const targetY = parseInt(document.getElementById('targetY').value);
+
+                if (!targetRoom || isNaN(targetX) || isNaN(targetY)) {
+                    alert('Veuillez remplir tous les champs correctement.');
+                    return;
+                }
+
+                if (targetX < 0 || targetX > 24 || targetY < 0 || targetY > 17) {
+                    alert('Les coordonnées de destination doivent être entre 0-24 pour X et 0-17 pour Y.');
+                    return;
+                }
+
+                // Ajouter la porte avec les paramètres configurés
+                const room = this.levels[this.currentRoom];
+                room.doors.push({
+                    x: this.pendingDoorPosition.x,
+                    y: this.pendingDoorPosition.y,
+                    targetRoom: targetRoom,
+                    targetX: targetX,
+                    targetY: targetY
+                });
+
+                this.closeDoorModal();
+                this.render();
+                this.updateInfo();
+                this.updateStatus(`Porte ajoutée à (${this.pendingDoorPosition.x}, ${this.pendingDoorPosition.y}) vers ${targetRoom} (${targetX}, ${targetY})`);
+            }
+
+            removeEntityAt(x, y) {
+                const room = this.levels[this.currentRoom];
+                room.entities = room.entities.filter(e => 
+                    e.x !== x || 
+                    e.y !== y
+                );
+                room.doors = room.doors.filter(d => d.x !== x || d.y !== y);
+            }
+
+            render() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                const room = this.levels[this.currentRoom];
+                if (!room) return;
+
+                // Dessiner la grille
+                for (let y = 0; y < room.layout.length; y++) {
+                    for (let x = 0; x < room.layout[y].length; x++) {
+                        const tileX = x * this.tileSize;
+                        const tileY = y * this.tileSize;
+
+                        // Fond
+                        this.ctx.fillStyle = room.layout[y][x] === 1 ? '#2d3748' : '#f7fafc';
+                        this.ctx.fillRect(tileX, tileY, this.tileSize, this.tileSize);
+
+                        // Bordure
+                        this.ctx.strokeStyle = '#e2e8f0';
+                        this.ctx.lineWidth = 1;
+                        this.ctx.strokeRect(tileX, tileY, this.tileSize, this.tileSize);
+                    }
+                }
+
+                // Dessiner les zombies
+                room.entities.forEach(entity => {
+                    if (entity.type === 'zombie') {
+                        // Les coordonnées sont maintenant en grille directement
+                        const gridX = entity.x;
+                        const gridY = entity.y;
+                        
+                        // Vérifier que les coordonnées sont dans les limites de la grille
+                        if (gridX >= 0 && gridX < 25 && gridY >= 0 && gridY < 18) {
+                            this.ctx.fillStyle = '#e53e3e';
+                            this.ctx.fillRect(
+                                gridX * this.tileSize, 
+                                gridY * this.tileSize, 
+                                this.tileSize, 
+                                this.tileSize
+                            );
+                            this.ctx.fillStyle = '#fff';
+                            this.ctx.font = '12px Arial';
+                            this.ctx.fillText('Z', gridX * this.tileSize + 6, gridY * this.tileSize + 15);
+                        }
+                    }
+                });
+
+                // Dessiner les portes
+                room.doors.forEach(door => {
+                    this.ctx.fillStyle = '#38a169';
+                    this.ctx.fillRect(
+                        door.x * this.tileSize, 
+                        door.y * this.tileSize, 
+                        this.tileSize, 
+                        this.tileSize
+                    );
+                    this.ctx.fillStyle = '#fff';
+                    this.ctx.font = '12px Arial';
+                    this.ctx.fillText('D', door.x * this.tileSize + 6, door.y * this.tileSize + 15);
+                });
+
+                // Dessiner la grille si activée
+                if (this.showGrid) {
+                    this.ctx.strokeStyle = '#cbd5e0';
+                    this.ctx.lineWidth = 0.5;
+                    for (let i = 0; i <= 25; i++) {
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(i * this.tileSize, 0);
+                        this.ctx.lineTo(i * this.tileSize, this.canvas.height);
+                        this.ctx.stroke();
+                    }
+                    for (let i = 0; i <= 18; i++) {
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(0, i * this.tileSize);
+                        this.ctx.lineTo(this.canvas.width, i * this.tileSize);
+                        this.ctx.stroke();
+                    }
+                }
+            }
+
+            updateInfo() {
+                const room = this.levels[this.currentRoom];
+                if (!room) return;
+
+                const wallCount = room.layout.flat().filter(tile => tile === 1).length;
+                const zombieCount = room.entities.filter(e => e.type === 'zombie').length;
+                const doorCount = room.doors.length;
+
+                document.getElementById('wallCount').textContent = wallCount;
+                document.getElementById('zombieCount').textContent = zombieCount;
+                document.getElementById('doorCount').textContent = doorCount;
+                document.getElementById('gridSize').textContent = '25 x 18';
+            }
+
+            updateStatus(message) {
+                document.getElementById('statusBar').textContent = message;
+                setTimeout(() => {
+                    document.getElementById('statusBar').textContent = 'Prêt à éditer';
+                }, 2000);
+            }
+
+            saveLevel() {
+                // Créer une version formatée manuellement pour les layouts
+                const formattedLevels = this.formatLevelsForExport(this.levels);
+                const dataBlob = new Blob([`export default ${formattedLevels}`], {type: 'application/javascript'});
+                const url = URL.createObjectURL(dataBlob);
+                
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'levels.js';
+                link.click();
+                
+                URL.revokeObjectURL(url);
+                this.updateStatus('Niveau sauvegardé avec succès !');
+            }
+
+            formatLevelsForExport(levels) {
+                let result = '{\n';
+                
+                Object.keys(levels).forEach((roomName, roomIndex) => {
+                    const room = levels[roomName];
+                    result += `    "${roomName}": {\n`;
+                    result += `        "layout": [\n`;
+                    
+                    // Formater chaque ligne du layout sur une seule ligne
+                    room.layout.forEach((row, rowIndex) => {
+                        result += `            [${row.join(', ')}]`;
+                        if (rowIndex < room.layout.length - 1) {
+                            result += ',';
+                        }
+                        result += '\n';
+                    });
+                    
+                    result += `        ],\n`;
+                    result += `        "entities": [\n`;
+                    
+                    // Formater les entités
+                    room.entities.forEach((entity, entityIndex) => {
+                        result += `            { "type": "${entity.type}", "x": ${entity.x}, "y": ${entity.y} }`;
+                        if (entityIndex < room.entities.length - 1) {
+                            result += ',';
+                        }
+                        result += '\n';
+                    });
+                    
+                    result += `        ],\n`;
+                    result += `        "doors": [\n`;
+                    
+                    // Formater les portes
+                    room.doors.forEach((door, doorIndex) => {
+                        result += `            { "x": ${door.x}, "y": ${door.y}, "targetRoom": "${door.targetRoom}", "targetX": ${door.targetX}, "targetY": ${door.targetY} }`;
+                        if (doorIndex < room.doors.length - 1) {
+                            result += ',';
+                        }
+                        result += '\n';
+                    });
+                    
+                    result += `        ]\n`;
+                    result += `    }`;
+                    if (roomIndex < Object.keys(levels).length - 1) {
+                        result += ',';
+                    }
+                    result += '\n';
+                });
+                
+                result += '}';
+                return result;
+            }
+
+            addRoom() {
+                const roomName = prompt('Nom de la nouvelle salle:');
+                if (!roomName) return;
+
+                if (this.levels[roomName]) {
+                    alert('Une salle avec ce nom existe déjà !');
+                    return;
+                }
+
+                // Créer une grille vide
+                const layout = Array(19).fill().map(() => Array(25).fill(0));
+                // Ajouter des murs sur les bords
+                for (let i = 0; i < 25; i++) {
+                    layout[0][i] = 1;
+                    layout[18][i] = 1;
+                }
+                for (let i = 0; i < 19; i++) {
+                    layout[i][0] = 1;
+                    layout[i][24] = 1;
+                }
+
+                this.levels[roomName] = {
+                    layout: layout,
+                    entities: [],
+                    doors: []
+                };
+
+                // Mettre à jour le sélecteur de salle
+                this.initializeRoomSelector();
+                this.currentRoom = roomName;
+                document.getElementById('roomSelect').value = roomName;
+                
+                this.render();
+                this.updateInfo();
+                this.updateStatus(`Nouvelle salle "${roomName}" créée !`);
+                
+                // Mettre à jour les options de la modale si elle est ouverte
+                if (document.getElementById('doorModal').style.display === 'block') {
+                    this.updateDoorModalOptions();
+                }
+            }
+
+            deleteRoom() {
+                if (Object.keys(this.levels).length <= 1) {
+                    alert('Impossible de supprimer la dernière salle !');
+                    return;
+                }
+
+                const roomName = this.currentRoom;
+                if (confirm(`Êtes-vous sûr de vouloir supprimer la salle "${roomName}" ?`)) {
+                    delete this.levels[roomName];
+                    
+                    // Mettre à jour le sélecteur de salle
+                    this.initializeRoomSelector();
+                    
+                    this.render();
+                    this.updateInfo();
+                    this.updateStatus(`Salle "${roomName}" supprimée !`);
+                    
+                    // Mettre à jour les options de la modale si elle est ouverte
+                    if (document.getElementById('doorModal').style.display === 'block') {
+                        this.updateDoorModalOptions();
+                    }
+                }
+            }
+
+            exportLevel() {
+                this.saveLevel();
+            }
+
+            clearLevel() {
+                if (confirm('Êtes-vous sûr de vouloir vider cette salle ?')) {
+                    const room = this.levels[this.currentRoom];
+                    room.layout = Array(18).fill().map(() => Array(25).fill(0));
+                    room.entities = [];
+                    room.doors = [];
+                    
+                    this.render();
+                    this.updateInfo();
+                    this.updateStatus('Salle vidée !');
+                }
+            }
+
+            toggleGrid() {
+                this.showGrid = !this.showGrid;
+                this.render();
+                this.updateStatus(this.showGrid ? 'Grille affichée' : 'Grille masquée');
+            }
+
+            zoomIn() {
+                if (this.tileSize < 40) {
+                    this.tileSize += 2;
+                    this.render();
+                    this.updateStatus('Zoom augmenté');
+                }
+            }
+
+            zoomOut() {
+                if (this.tileSize > 10) {
+                    this.tileSize -= 2;
+                    this.render();
+                    this.updateStatus('Zoom diminué');
+                }
+            }
+
+            updateStatus(message) {
+                document.getElementById('statusBar').textContent = message;
+            }
+        }
+
+        // Initialiser l'éditeur quand la page est chargée
+        document.addEventListener('DOMContentLoaded', () => {
+            new LevelEditor();
+        });
+    </script>
+</body>
+</html> 
