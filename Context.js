@@ -1,32 +1,32 @@
 // =================================================================
-// CONFIGURATION DU JEU (Context)
+// GAME CONFIGURATION (Context)
 // =================================================================
 class Context {
     constructor() {
-        // Dimensions du canvas
+        // Canvas dimensions
         this.CANVAS_WIDTH = 800;
         this.CANVAS_HEIGHT = 608;
 
-        // Taille de chaque tuile (tile) en pixels
+        // Size of each tile in pixels
         this.TILE_SIZE = 32;
 
-        // Constantes de physique (valeurs par frame à 60FPS)
+        // Physics constants (values per frame at 60FPS)
         this.GRAVITY = 0.6;
         this.FRICTION = 0.8; 
 
-        // Vitesse et saut du joueur
+        // Player speed and jump
         this.PLAYER_SPEED = 4;
         this.PLAYER_JUMP_FORCE = -14;
 
-        // Système de dash
+        // Dash system
         this.DASH_SPEED = 12;
         this.DASH_DURATION = 10; // frames
         this.DASH_COOLDOWN = 30; // frames
 
-        // Vitesse du zombie
+        // Zombie speed
         this.ZOMBIE_SPEED = 0.5;
 
-        // Activer/désactiver le mode de débogage
+        // Enable/disable debug mode
         this.DEBUG = false;
     }
 }

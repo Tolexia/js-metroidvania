@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Coordonnées</title>
+    <title>Coordinate Test</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -22,7 +22,7 @@
     </style>
 </head>
 <body>
-    <h1>🧪 Test des Coordonnées</h1>
+    <h1>🧪 Coordinate Test</h1>
     <div id="results"></div>
 
     <script type="module">
@@ -32,23 +32,23 @@
             const results = document.getElementById('results');
             let html = '';
 
-            // Test 1: Vérifier que les zombies ont des coordonnées de grille
+            // Test 1: Check that zombies have grid coordinates
             html += '<div class="test-result">';
-            html += '<h3>Test 1: Coordonnées zombies</h3>';
+            html += '<h3>Test 1: Zombie coordinates</h3>';
             
             let zombieTestPassed = true;
             Object.entries(levels).forEach(([roomName, room]) => {
                 if (room.entities) {
                     room.entities.forEach(entity => {
                         if (entity.type === 'zombie') {
-                            html += `<p>🧟 Zombie dans ${roomName}: x=${entity.x}, y=${entity.y}</p>`;
+                            html += `<p>🧟 Zombie in ${roomName}: x=${entity.x}, y=${entity.y}</p>`;
                             
-                            // Vérifier que les coordonnées sont dans la grille 25x18
+                            // Check that coordinates are within 25x18 grid
                             if (entity.x < 0 || entity.x >= 25 || entity.y < 0 || entity.y >= 18) {
-                                html += `<p class="error">❌ Coordonnées hors grille !</p>`;
+                                html += `<p class="error">❌ Coordinates out of grid!</p>`;
                                 zombieTestPassed = false;
                             } else {
-                                html += `<p class="success">✅ Coordonnées valides</p>`;
+                                html += `<p class="success">✅ Valid coordinates</p>`;
                             }
                         }
                     });
@@ -56,39 +56,39 @@
             });
             html += '</div>';
 
-            // Test 2: Vérifier que les portes ont des coordonnées de grille
+            // Test 2: Check that doors have grid coordinates
             html += '<div class="test-result">';
-            html += '<h3>Test 2: Coordonnées portes</h3>';
+            html += '<h3>Test 2: Door coordinates</h3>';
             
             let doorTestPassed = true;
             Object.entries(levels).forEach(([roomName, room]) => {
                 if (room.doors) {
                     room.doors.forEach(door => {
-                        html += `<p>🚪 Porte dans ${roomName}: x=${door.x}, y=${door.y}</p>`;
+                        html += `<p>🚪 Door in ${roomName}: x=${door.x}, y=${door.y}</p>`;
                         
                         if (door.x < 0 || door.x >= 25 || door.y < 0 || door.y >= 18) {
-                            html += `<p class="error">❌ Coordonnées hors grille !</p>`;
+                            html += `<p class="error">❌ Coordinates out of grid!</p>`;
                             doorTestPassed = false;
                         } else {
-                            html += `<p class="success">✅ Coordonnées valides</p>`;
+                            html += `<p class="success">✅ Valid coordinates</p>`;
                         }
                     });
                 }
             });
             html += '</div>';
 
-            // Test 3: Vérifier la cohérence du format
+            // Test 3: Check format consistency
             html += '<div class="test-result">';
-            html += '<h3>Test 3: Cohérence du format</h3>';
+            html += '<h3>Test 3: Format consistency</h3>';
             
             let formatTestPassed = true;
             Object.entries(levels).forEach(([roomName, room]) => {
                 if (room.entities) {
                     room.entities.forEach(entity => {
                         if (entity.type === 'zombie') {
-                            // Vérifier que ce sont des nombres entiers
+                            // Check that they are integers
                             if (!Number.isInteger(entity.x) || !Number.isInteger(entity.y)) {
-                                html += `<p class="error">❌ Coordonnées zombies non entières dans ${roomName}</p>`;
+                                html += `<p class="error">❌ Non-integer zombie coordinates in ${roomName}</p>`;
                                 formatTestPassed = false;
                             }
                         }
@@ -97,7 +97,7 @@
                 if (room.doors) {
                     room.doors.forEach(door => {
                         if (!Number.isInteger(door.x) || !Number.isInteger(door.y)) {
-                            html += `<p class="error">❌ Coordonnées portes non entières dans ${roomName}</p>`;
+                            html += `<p class="error">❌ Non-integer door coordinates in ${roomName}</p>`;
                             formatTestPassed = false;
                         }
                     });
@@ -105,24 +105,24 @@
             });
             
             if (formatTestPassed) {
-                html += '<p class="success">✅ Format cohérent</p>';
+                html += '<p class="success">✅ Consistent format</p>';
             }
             html += '</div>';
 
-            // Résumé
+            // Summary
             html += '<div class="test-result">';
-            html += '<h3>📊 Résumé</h3>';
+            html += '<h3>📊 Summary</h3>';
             if (zombieTestPassed && doorTestPassed && formatTestPassed) {
-                html += '<p class="success">🎉 Tous les tests sont passés ! Les coordonnées sont harmonisées.</p>';
+                html += '<p class="success">🎉 All tests passed! Coordinates are harmonized.</p>';
             } else {
-                html += '<p class="error">❌ Certains tests ont échoué.</p>';
+                html += '<p class="error">❌ Some tests failed.</p>';
             }
             html += '</div>';
 
             results.innerHTML = html;
         }
 
-        // Exécuter les tests
+        // Run tests
         testCoordinates();
     </script>
 </body>

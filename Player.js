@@ -1,7 +1,7 @@
 import Entity from './Entity.js';
 
 // =================================================================
-// CLASSE JOUEUR (Player)
+// PLAYER CLASS (Player)
 // =================================================================
 class Player extends Entity {
     constructor(config, x, y, levelManager) {
@@ -9,9 +9,9 @@ class Player extends Entity {
         this.keys = {};
         this.setupControls();
         
-        // Variables pour le système de dash
+        // Variables for dash system
         this.isDashing = false;
-        this.dashDirection = 0; // -1 pour gauche, 1 pour droite
+        this.dashDirection = 0; // -1 for left, 1 for right
         this.dashTimer = 0;
         this.dashCooldown = 0;
     }
@@ -22,7 +22,7 @@ class Player extends Entity {
     }
 
     handleInput() {
-        // Gestion du dash
+        // Dash handling
         if (this.dashCooldown > 0) {
             this.dashCooldown--;
         }
@@ -38,7 +38,7 @@ class Player extends Entity {
                 this.velocityX = 0;
             }
         } else {
-            // Dash avec Shift + flèche gauche/droite
+            // Dash with Shift + left/right arrow
             if (this.dashCooldown <= 0 && (this.keys['ShiftLeft'] || this.keys['ShiftRight'])) {
                 if (this.keys['ArrowLeft']) {
                     this.startDash(-1);
@@ -47,7 +47,7 @@ class Player extends Entity {
                 }
             }
             
-            // Mouvement normal
+            // Normal movement
             if (this.keys['ArrowLeft']) {
                 this.velocityX = -this.config.PLAYER_SPEED;
             } else if (this.keys['ArrowRight']) {

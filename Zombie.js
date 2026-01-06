@@ -1,7 +1,7 @@
 import Entity from './Entity.js';
 
 // =================================================================
-// CLASSE ENNEMI (Zombie)
+// ENEMY CLASS (Zombie)
 // =================================================================
 class Zombie extends Entity {
     constructor(config, x, y, levelManager) {

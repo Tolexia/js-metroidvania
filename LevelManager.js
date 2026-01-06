@@ -13,7 +13,7 @@ class LevelManager {
 
     loadRoom(roomId) {
         if (!this.levelData[roomId]) {
-            console.error(`La salle "${roomId}" n'existe pas.`);
+            console.error(`Room "${roomId}" does not exist.`);
             return [];
         }
         this.currentRoomId = roomId;
@@ -22,7 +22,7 @@ class LevelManager {
         if (this.currentRoomData.entities) {
             this.currentRoomData.entities.forEach(entityInfo => {
                 if (entityInfo.type === 'zombie') {
-                    // Convertir les coordonnées de grille en coordonnées pixels
+                    // Convert grid coordinates to pixel coordinates
                     const pixelX = entityInfo.x * this.config.TILE_SIZE;
                     const pixelY = entityInfo.y * this.config.TILE_SIZE;
                     entities.push(new Zombie(this.config, pixelX, pixelY, this));

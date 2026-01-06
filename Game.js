@@ -5,7 +5,7 @@ import Zombie from './Zombie.js';
 import levelData from './levels.js';
 
 // =================================================================
-// CLASSE PRINCIPALE DU JEU (Game)
+// MAIN GAME CLASS (Game)
 // =================================================================
 class Game {
     constructor() {
@@ -26,25 +26,25 @@ class Game {
         this.initialPlayerY = 400;
         this.initialRoom = 'start_room';
         
-        // Gestionnaire pour le redimensionnement de la fenêtre
+        // Window resize handler
         this.setupWindowHandlers();
     }
 
     setupWindowHandlers() {
-        // Gestionnaire pour la visibilité de la page
+        // Page visibility handler
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
                 this.isPaused = true;
-                this.lastTime = 0; // Reset du temps pour éviter les gros deltaTime
+                this.lastTime = 0; // Reset time to avoid large deltaTime
             } else {
                 this.isPaused = false;
             }
         });
 
-        // Gestionnaire pour le focus de la fenêtre
+        // Window focus handler
         window.addEventListener('focus', () => {
             this.isPaused = false;
-            this.lastTime = 0; // Reset du temps
+                this.lastTime = 0; // Reset time
         });
 
         window.addEventListener('blur', () => {
@@ -53,7 +53,7 @@ class Game {
     }
 
     resetGame() {
-        console.log("Collision avec un ennemi ! Redémarrage...");
+        console.log("Collision with enemy! Restarting...");
         this.loadRoom(this.initialRoom, this.initialPlayerX, this.initialPlayerY);
     }
     
@@ -73,7 +73,7 @@ class Game {
     }
 
     loadRoom(roomId, playerStartX, playerStartY) {
-        console.log(`Chargement de la salle: ${roomId}`);
+        console.log(`Loading room: ${roomId}`);
         const newEntities = this.levelManager.loadRoom(roomId);
         this.entities = [this.player, ...newEntities];
         
@@ -84,30 +84,30 @@ class Game {
     }
 
     gameLoop(timestamp) {
-        // Si le jeu est en pause, on continue la boucle sans mettre à jour
+        // If game is paused, continue loop without updating
         if (this.isPaused) {
             requestAnimationFrame(this.gameLoop.bind(this));
             return;
         }
 
-        // NEW: Calcul du deltaTime et du facteur de normalisation
+        // NEW: Calculate deltaTime and normalization factor
         const deltaTime = this.lastTime === 0 ? 0 : timestamp - this.lastTime;
         this.lastTime = timestamp;
         
-        // Limiter le deltaTime pour éviter les sauts de position
-        const clampedDeltaTime = Math.min(deltaTime, 50); // Réduit de 100ms à 50ms
+        // Limit deltaTime to avoid position jumps
+        const clampedDeltaTime = Math.min(deltaTime, 50); // Reduced from 100ms to 50ms
         
-        // On normalise par rapport à une frame de 60 FPS (environ 16.67ms)
-        // Si le jeu tourne à 30 FPS, dtFactor sera ~2. S'il tourne à 120 FPS, ~0.5.
+        // Normalize relative to 60 FPS frame (approximately 16.67ms)
+        // If game runs at 30 FPS, dtFactor will be ~2. If it runs at 120 FPS, ~0.5.
         const dtFactor = clampedDeltaTime / (1000 / 60);
 
-        // 1. Mettre à jour toutes les entités en passant le dtFactor
+        // 1. Update all entities passing dtFactor
         this.entities.forEach(entity => entity.update(this, dtFactor));
         
-        // 2. Vérifier les collisions du joueur
+        // 2. Check player collisions
         this.checkPlayerCollisions();
 
-        // 3. Dessiner le tout
+        // 3. Draw everything
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.levelManager.draw(this.ctx);
         this.entities.forEach(entity => entity.draw(this.ctx));
